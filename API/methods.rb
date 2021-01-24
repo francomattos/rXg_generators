@@ -62,8 +62,92 @@ class Rxg_API
                    })
     end
 
-    # Sends post request with payload
+    # Sends post request to create switch with payload
+    self.generate(payload, object_type)
+  end
+
+  def generate_wlan_controller(controller_count)
+    get_url = @device_address + 'wlan_devices/index.json' + @device_api_key
+    object_type = "wlan_devices"
+
+    # Very important, needs to specify to infrastructure what type of device to use
+    type = "WlanDevice"
+    charset = ('0'..'9').to_a + ('a'..'f').to_a
+    #SSID name pool
+    ssid_names = %w(Pool_Network Convention_Center Lobby_Network Thai_Restaurant Sports_Bar)
+
+    # Creates a database of controllers to be created
+    controller_names = Array[
+      {:name => "Ruckus Virtual SmartZone", :device => "ruckos",
+           :apcount => 3, :apname => "Ruckus R720", :apmac => "ec58ea"}
+   ]
+
+    # Retreives list of controllers, and gets the count to set as host and label
+    host = JSON.parse(Excon.get(get_url).body).length
+
+    # Creates payload for wlan controllers to be sent via API
+    payload = []
+    controller_count.times do
+      host += 1
+      controller_names_index = rand(controller_names.length)
+
+      payload.push({
+        name: "[#{host}] " + controller_names[controller_names_index][:name],
+        type: type,
+        host: "192.168.60." + host.to_s,
+        device: controller_names[controller_names_index][:device],
+        created_by: $curr_user,
+        updated_by: $curr_user,
+        protocol: "ssh_coa",
+        username: "admin"
+                   })
+    end
+
+    # Sends post request to create controller with payload
     self.generate(payload, object_type)
 
+    # Retreives list of all controllers
+    controllers = JSON.parse(Excon.get(get_url).body)
+    
+    # Goes through the controllers created in reverse order
+    controllers.reverse.take(payload.length).each do |x|
+      # Finds the name of the controller, removing the [number] at beginning
+      controller_name = x["name"].split(' ')[1..-1].join(' ')
+      controller_id = x["id"]
+
+      # Gets the object that matches the controller name
+      controller_object = controller_names.find{|controller_list| controller_list[:name] == controller_name}
+      ap_mac_end = charset.shuffle!.join[0...6]
+
+      # Creates payload for access points based on count defined in controller
+      payload = []
+      controller_object[:apcount].times do |n|
+        payload.push({
+          infrastructure_device: controller_id,
+          name: controller_object[:apname],
+          mac: controller_object[:apmac] + ap_mac_end
+        })
+      end
+
+      # Sends post request to create access points with payload
+      self.generate(payload, "access_points")
+
+      # Generates one SSID per controller
+      ssid_name = ssid_names[rand(ssid_names.length)]
+      payload = [{
+        name: ssid_name,
+        ssid: ssid_name,
+        infrastructure_device: controller_id,
+        encryption: "none",
+        authentication: "none"}]
+
+      # Sends post request to create SSD with payload
+      self.generate(payload, "wlans")
+    end
   end
+
+
+
+
+
 end

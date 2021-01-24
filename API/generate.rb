@@ -35,9 +35,8 @@ if ["help", "--help", "-h"].include?(ARGV[0])
     Syntax use: generate object count
     You may enter many objects in a single line
     Supported objects:
-    | switch | 
+    | switch | controller |
     )
-
 
 # Validates that every device has a number of instances to create
 elsif ARGV.length.odd?
@@ -61,8 +60,8 @@ ARGV.each_index do |i|
   case ARGV[i].downcase
   when "switch"
     devapi.create_switch(ARGV[i + 1].to_i)
-  when "account"
-    #puts "account"
+  when "controller"
+    devapi.generate_wlan_controller(ARGV[i + 1].to_i)
   else
     puts "Automatic generation for #{ARGV[i]} is not yet supported."
     next
