@@ -57,6 +57,3 @@ end
 generated_devices.each_index do |i|
   puts "Created #{generated_devices[i][:name]} count: #{generated_devices[i][:count]}"
 end
-
-
-puts Excon.get("https://192.168.80.34/admin/scaffolds/infrastructure_devices/index.json?api_key=tdlRrSgyPEHoADDTAGhNIfCosQyMBkq3uauAKDu3ox6mpwLVXRl6TlTLqNUVPIOm6THiHfWJiAwBiHyke_y2tQ").body
