@@ -4,16 +4,19 @@ require_relative "methods.rb"
 
 # rXg production environments should ALWAYS have a valid ssl certificate
 # If no valid ssl certificate for device for testing purposes, uncomment line below
-Excon.defaults[:ssl_verify_peer] = false
+#Excon.defaults[:ssl_verify_peer] = false
 
+# Configure device address and API key
 DEVICE_ADDRESS = ""
-if DEVICE_ADDRESS.empty?
+API_KEY = ""
+
+# If none configured, ask to enter via terminal
+while DEVICE_ADDRESS.empty?
   puts "Enter device address:"
   DEVICE_ADDRESS = STDIN.gets.chomp!
 end
 
-API_KEY = ""
-if API_KEY.empty?
+while API_KEY.empty?
   puts "Enter device address:"
   API_KEY = STDIN.gets.chomp!
 end
@@ -22,6 +25,19 @@ end
 if ARGV.empty?
   puts "predefined config."
   exit!
+end
+
+# Help menu that matches common help options
+if ["help", "--help", "-h"].include?(ARGV[0])
+  puts %q(
+    This program will generate an artificial evironemnt for an rXg device
+    You must enter the FQDN and API key each time, or statically configure inside script
+    Syntax use: generate object count
+    You may enter many objects in a single line
+    Supported objects:
+    | switch | 
+    )
+
 
 # Validates that every device has a number of instances to create
 elsif ARGV.length.odd?
@@ -44,7 +60,7 @@ ARGV.each_index do |i|
 
   case ARGV[i].downcase
   when "switch"
-    #devapi.create_switch(ARGV[i + 1].to_i)
+    devapi.create_switch(ARGV[i + 1].to_i)
   when "account"
     #puts "account"
   else
@@ -54,9 +70,7 @@ ARGV.each_index do |i|
   generated_devices.push({:name => ARGV[i], :count =>  ARGV[i+1]})
 end
 
+# Returns confirmation of devices created
 generated_devices.each_index do |i|
   puts "Created #{generated_devices[i][:name]} count: #{generated_devices[i][:count]}"
 end
-
-
-puts Excon.get("https://192.168.80.34/admin/scaffolds/infrastructure_devices/index.json?api_key=tdlRrSgyPEHoADDTAGhNIfCosQyMBkq3uauAKDu3ox6mpwLVXRl6TlTLqNUVPIOm6THiHfWJiAwBiHyke_y2tQ").body

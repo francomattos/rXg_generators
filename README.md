@@ -8,4 +8,6 @@ The API folder utilizes the RESTful API of the rXg and runs remotely. Prior to u
 
 ## Installation
 
+The API interface utilizes excon, it must be added as a gem:
+
 `sh gem install excon `
