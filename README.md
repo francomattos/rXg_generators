@@ -4,7 +4,8 @@ Ruby interface for generating objects to be emulated inside the rXg interface.
 
 The tools folder includes a generator to be installed and run inside the rXg shell.
 
-The API folder utilizes the RESTful API of the rXg and runs remotely. Prior to using the API you must got to System > Admin, select your user and click Show, retreive your API key.
+The API folder utilizes the RESTful API of the rXg and runs remotely. Prior to using the API tool, you must retreive your API key.
+Go to System > Admin, select your user and click Show, retreive your API key.
 
 ## Installation
 
@@ -12,13 +13,20 @@ The API interface utilizes excon, it must be added as a gem:
 
 `sh gem install excon `
 
-## API command Syntax
+## API tool quick tutorial
 
-Use "generate object count" to create an object, for supported objects type generate --help
-Multiple devices can be created in one line, below is an example:
+The API tool uses the following syntax:
 
-'sh generate switch 5 controller 2'
+`sh generate object count`
+
+To bring up the help menu including the list of supported obejcts, use:
+
+`sh generate --help`
+
+Multiple devices can be created in one line.
+
+`sh generate switch 5 controller 2`
 
 This command will create 5 switches and 2 controllers.
 
-Some objects may create other related objects in the process, for example, a controller creates access points and an SSID
+Some objects may create other related objects in the process, for example, a controller creates access points and an SSID.
