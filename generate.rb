@@ -1,93 +1,75 @@
+#
+# Created by Franco Mattos
+# github.com/francomattos
+#
+# This tool is used to generate an artificial environment inside the rXg
+# See the help menu for more information: generate --help
+#
+
 require 'excon'
 require 'json'
-require_relative 'rXg_API'
+require_relative 'API/rXg_API'
 
-# This tool is used to create an artificial environment inside the rXg
-# The command syntax is:
-# generate object count
+# Configure a static device address and API key here
+# Device address format example: https://google.com
+# device_address = ''
+# api_key = ''
 
 # rXg production environments should ALWAYS have a valid ssl certificate
-# If no valid ssl certificate for device for testing purposes, uncomment line below
+# If no valid ssl certificate for device uncomment line below
 # Excon.defaults[:ssl_verify_peer] = false
 
-# Configure a static device address and API key
-DEVICE_ADDRESS = ''
-API_KEY = ''
-
-# Help menu that matches common help options
 if ['help', '--help', '-h'].include?(ARGV[0])
   puts '
     This program will generate an artificial evironemnt for an rXg device
     You must enter the FQDN and API key each time, or statically configure inside script
     Syntax use: generate object count
     You may enter many objects in a single line
+    Using command without any arguments runs default configuration
+
     Supported objects:
-    | switch | controller |
+    | switch | wlan |
     '
   exit!
-
-# Validates that every device has a number of instances to create
 elsif ARGV.length.odd?
-  puts 'Valid Format: Device count.'
-  puts 'You may create as many devices as you wish in one line.'
-  exit
+  puts 'Invalid format, you must define object and how many to create. type generate --help for help menu.'
+  exit!
 end
 
-# If no device or API configured, ask to enter via terminal
-# This block will not produce warnings due to re-assigning variable
-$VERBOSE = nil
-
-while DEVICE_ADDRESS.empty?
-  puts 'Enter device address (e.g.: https://google.com):'
-  begin
-    DEVICE_ADDRESS = STDIN.gets.chomp!
-    Excon.get(DEVICE_ADDRESS, connect_timeout: 5)
-  rescue 
-    DEVICE_ADDRESS = ''
-    puts "Unable to connect to device, please check the address."
-  end
-end
-
-while API_KEY.empty?
-  puts 'Enter API key:'
-  API_KEY = STDIN.gets.chomp!
-end
-
-$VERBOSE = true
-
-# Checks if no arguments passed, then runs default config
+# You may customize a default configuration here
 if ARGV.empty?
   puts 'predefined config.'
   exit!
 end
 
-# instantiating  the API class
-rXg_API = Rxg_API.new(DEVICE_ADDRESS, API_KEY)
+# device_address and api_key must be initialized to nil if not statically configured above
+rxg_generator = RxgAPI.new(device_address ||= nil, api_key ||= nil)
 
-# Stores created devices
 generated_devices = []
 
-# Check if device is valid option and creates device
 ARGV.each_index do |i|
+  next if ARGV[i].to_i != 0 # If value is a number, skip
+  next if ARGV[i + 1].to_i <= 0 # If next device is not a number or negative number, skip
+  object_name = ARGV[i]
+  create_count = ARGV[i + 1].to_i
 
-  # If it is a number, skip
-  next if ARGV[i].to_i != 0
-  # If next device is not a number or negative number, skip
-  next if ARGV[i + 1].to_i <= 0
-
-  case ARGV[i].downcase
+  case object_name.downcase
   when 'switch'
-    rXg_API.create_switch(ARGV[i + 1].to_i)
-  when 'controller'
-    rXg_API.generate_wlan_controller(ARGV[i + 1].to_i)
+    #rxg_generator.create_switch(create_count)
+  when 'wlan'
+    rxg_generator.create_wlan_controller(create_count)
+    rxg_generator.create_wlan(create_count)
+    rxg_generator.create_access_point(create_count)
   else
-    puts "Automatic generation for #{ARGV[i]} is not yet supported."
+    puts "Automatic generation for #{object_name} is not yet supported."
     next
   end
-  generated_devices.push({ name: ARGV[i], count: ARGV[i + 1] })
+
+  generated_devices.push({ name: object_name, count: create_count })
 end
 
 # Returns confirmation of devices created
 generated_devices.each_index do |i|
   puts "Created #{generated_devices[i][:name]} count: #{generated_devices[i][:count]}"
 end
+
