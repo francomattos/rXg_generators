@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 #
 # Created by Franco Mattos
 # github.com/francomattos
@@ -8,7 +10,7 @@
 
 require 'excon'
 require 'json'
-require_relative 'API/rXg_API'
+require_relative 'lib/rXg_API'
 
 # Configure a static device address and API key here
 # Device address format example: https://google.com
@@ -28,7 +30,7 @@ if ['help', '--help', '-h'].include?(ARGV[0])
     Using command without any arguments runs default configuration
 
     Supported objects:
-    | switch | wlan |
+    | admin |  account | certificate | switch | wlan |
     '
   exit!
 elsif ARGV.length.odd?
@@ -36,40 +38,55 @@ elsif ARGV.length.odd?
   exit!
 end
 
-# You may customize a default configuration here
-if ARGV.empty?
-  puts 'predefined config.'
-  exit!
-end
-
-# device_address and api_key must be initialized to nil if not statically configured above
+# device_address and api_key statically configured above, if not then it must be initialized to nil
 rxg_generator = RxgAPI.new(device_address ||= nil, api_key ||= nil)
 
-generated_devices = []
+# You may customize a default configuration here
+if ARGV.empty?
+  rxg_generator.create_account_group(1)
+  rxg_generator.create_account(3)
+  rxg_generator.create_device(3)
+  rxg_generator.create_admin(2)
+  rxg_generator.create_certificate(1)
+  rxg_generator.create_cert_signing_req(1)
+  rxg_generator.create_switch(4)
+  rxg_generator.create_wlan_controller(2)
+  rxg_generator.create_wlan(2)
+  rxg_generator.create_access_point(2)
+  exit!
+end
 
 ARGV.each_index do |i|
   next if ARGV[i].to_i != 0 # If value is a number, skip
   next if ARGV[i + 1].to_i <= 0 # If next device is not a number or negative number, skip
+
   object_name = ARGV[i]
   create_count = ARGV[i + 1].to_i
 
   case object_name.downcase
+  when 'account'
+    rxg_generator.create_account_group(1)
+    rxg_generator.create_account(create_count)
+    rxg_generator.create_device(create_count)
+    puts "Request for: #{create_count}, created account group, accounts, and devices"
+  when 'admin'
+    rxg_generator.create_admin(create_count)
+    puts "Request for: #{create_count}, created admins"
+  when 'certificate'
+    rxg_generator.create_certificate(create_count)
+    rxg_generator.create_cert_signing_req(create_count)
+    puts "Request for: #{create_count}, created certificate and certificate sgining request"
   when 'switch'
-    #rxg_generator.create_switch(create_count)
+    rxg_generator.create_switch(create_count)
+    puts "Request for: #{create_count}, created switch"
   when 'wlan'
     rxg_generator.create_wlan_controller(create_count)
     rxg_generator.create_wlan(create_count)
     rxg_generator.create_access_point(create_count)
+    puts "Request for: #{create_count}, controllers, access points, and wlans"
   else
     puts "Automatic generation for #{object_name} is not yet supported."
     next
   end
 
-  generated_devices.push({ name: object_name, count: create_count })
 end
-
-# Returns confirmation of devices created
-generated_devices.each_index do |i|
-  puts "Created #{generated_devices[i][:name]} count: #{generated_devices[i][:count]}"
-end
-

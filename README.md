@@ -11,21 +11,21 @@ Go to System > Admin, select your user and click Show, retreive your API key.
 
 The API interface utilizes excon, it must be added as a gem:
 
-`sh gem install excon `
+`gem install excon `
 
 ## API tool quick tutorial
 
 The API tool uses the following syntax:
 
-`sh generate object count`
+`generate object count`
 
 To bring up the help menu including the list of supported obejcts, use:
 
-`sh generate --help`
+`generate --help`
 
 Multiple devices can be created in one line.
 
-`sh generate switch 5 controller 2`
+`generate switch 5 controller 2`
 
 This command will create 5 switches and 2 controllers.
 
