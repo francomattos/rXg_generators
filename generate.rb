@@ -30,7 +30,7 @@ if ['help', '--help', '-h'].include?(ARGV[0])
     Using command without any arguments runs default configuration
 
     Supported objects:
-    | admin |  account | certificate | switch | wlan |
+    | admin | account | certificate | switch | wlan |
     '
   exit!
 elsif ARGV.length.odd?

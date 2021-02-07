@@ -26,7 +26,7 @@ class RxgAPI
       email = first_name.chr.downcase + last_name.chr.downcase + random_uid + '@' + EMAIL_DOMAIN_POOL[rand(EMAIL_DOMAIN_POOL.size)]
       user_password = ALPHANUMERIC_CHARSET.shuffle!.join[0...10]
 
-      payload.push({
+      payload.push(
         login: login,
         password: user_password,
         password_confirmation: user_password,
@@ -42,7 +42,7 @@ class RxgAPI
         unlimited_usage_minutes: true,
         no_usage_expiration: true,
         unlimited_devices: true
-      })
+      )
     end
 
     api_post(payload, scaffold)
@@ -56,11 +56,11 @@ class RxgAPI
 
     accounts_array.each do |account|
       rand(4).times do # Creates up to four devices per account
-        payload.push({
+        payload.push(
           name: DEVICE_POOL[rand(DEVICE_POOL.size)],
           mac: HEXADECIMAL_CHARSET.shuffle!.join[0...12],
           account: { id: account['id'] }
-        })
+        )
       end
     end
 
@@ -72,10 +72,10 @@ class RxgAPI
     payload = []
     
     group_count.times do
-      payload.push({
+      payload.push(
         name: ACCOUNT_GROUP_POOL[rand(ACCOUNT_GROUP_POOL.size)],
         priority: 4
-      })
+      )
     end
 
     api_post(payload, scaffold)
