@@ -1,6 +1,6 @@
 # Expands rXg_API.rg
 # Contains the methods for creating scaffold objects under Identities menu
-class RxgAPI
+module Identities
   # Creating an account will also create 1 account group and several devices tied to accounts
   def create_account(account_count)
     scaffold = 'accounts'
@@ -19,12 +19,12 @@ class RxgAPI
     payload = []
 
     account_count.times do
-      first_name = FIRST_NAME_POOL[rand(FIRST_NAME_POOL.size)]
-      last_name = LAST_NAME_POOL[rand(LAST_NAME_POOL.size)]
+      first_name = self.class::FIRST_NAME_POOL[rand(self.class::FIRST_NAME_POOL.size)]
+      last_name = self.class::LAST_NAME_POOL[rand(self.class::LAST_NAME_POOL.size)]
       random_uid = rand(9999).to_s
       login = first_name.chr.downcase + last_name.downcase + random_uid # Must be unique, so has to have appended uid
-      email = first_name.chr.downcase + last_name.chr.downcase + random_uid + '@' + EMAIL_DOMAIN_POOL[rand(EMAIL_DOMAIN_POOL.size)]
-      user_password = ALPHANUMERIC_CHARSET.shuffle!.join[0...10]
+      email = first_name.chr.downcase + last_name.chr.downcase + random_uid + '@' + self.class::EMAIL_DOMAIN_POOL[rand(self.class::EMAIL_DOMAIN_POOL.size)]
+      user_password = self.class::ALPHANUMERIC_CHARSET.shuffle!.join[0...10]
 
       payload.push(
         login: login,
@@ -57,8 +57,8 @@ class RxgAPI
     accounts_array.each do |account|
       rand(4).times do # Creates up to four devices per account
         payload.push(
-          name: DEVICE_POOL[rand(DEVICE_POOL.size)],
-          mac: HEXADECIMAL_CHARSET.shuffle!.join[0...12],
+          name: self.class::DEVICE_POOL[rand(self.class::DEVICE_POOL.size)],
+          mac: self.class::HEXADECIMAL_CHARSET.shuffle!.join[0...12],
           account: { id: account['id'] }
         )
       end
@@ -73,7 +73,7 @@ class RxgAPI
     
     group_count.times do
       payload.push(
-        name: ACCOUNT_GROUP_POOL[rand(ACCOUNT_GROUP_POOL.size)],
+        name: self.class::ACCOUNT_GROUP_POOL[rand(self.class::ACCOUNT_GROUP_POOL.size)],
         priority: 4
       )
     end

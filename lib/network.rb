@@ -1,6 +1,6 @@
 # Expands rXg_API.rg
 # Contains the methods for creating scaffold objects under Network menu
-class RxgAPI
+module Network
   # Creates switches, switchport creation via API is not currently supported
   def create_switch(switch_count)
     type = 'SwitchDevice' # Needs to specify to infrastructure what type of device to use
@@ -10,12 +10,12 @@ class RxgAPI
 
     switch_count.times do
       switch_id += 1
-      switch_pool_index = rand(SWITCH_POOL.size)
+      switch_pool_index = rand(self.class::SWITCH_POOL.size)
       payload.push(
-        name: "[#{switch_id}] #{SWITCH_POOL.dig(switch_pool_index, :name)}", # Prepends ID so names are unique
+        name: "[#{switch_id}] #{self.class::SWITCH_POOL.dig(switch_pool_index, :name)}", # Prepends ID so names are unique
         type: type,
         host: "192.168.10.#{switch_id}", # IP must be unique
-        device: SWITCH_POOL.dig(switch_pool_index, :device),
+        device: self.class::SWITCH_POOL.dig(switch_pool_index, :device),
         protocol: 'ssh_coa',
         username: 'admin'
       )
@@ -32,12 +32,12 @@ class RxgAPI
     
     controller_count.times do
       controller_id += 1
-      controller_pool_index = rand(CONTROLLER_POOL.size)
+      controller_pool_index = rand(self.class::CONTROLLER_POOL.size)
       payload.push(
-        name: "[#{controller_id}] #{CONTROLLER_POOL.dig(controller_pool_index, :name)}", # Prepends ID so names are unique
+        name: "[#{controller_id}] #{self.class::CONTROLLER_POOL.dig(controller_pool_index, :name)}", # Prepends ID so names are unique
         type: type,
         host: '192.168.20.' + controller_id.to_s,
-        device: CONTROLLER_POOL.dig(controller_pool_index, :device),
+        device: self.class::CONTROLLER_POOL.dig(controller_pool_index, :device),
         protocol: 'ssh_coa',
         username: 'admin'
       )
@@ -54,7 +54,7 @@ class RxgAPI
 
     controller_array.each do |controller_object|
       controller_id = controller_object['id'] # SSID must be tied into the ID of the controller
-      ssid_name = SSID_POOL[rand(SSID_POOL.size)]
+      ssid_name = self.class::SSID_POOL[rand(self.class::SSID_POOL.size)]
 
       payload.push(
         name: ssid_name,
@@ -78,11 +78,11 @@ class RxgAPI
       controller_id = controller_object['id']
       # Finds the name of the controller, removing the [number] at beginning
       controller_name = controller_object['name'].split(' ')[1..-1].join(' ')
-      controller = CONTROLLER_POOL.find { |c| c[:name] == controller_name }
+      controller = self.class::CONTROLLER_POOL.find { |c| c[:name] == controller_name }
 
       # AP count is based on number defined on controller pool, not the count passed by user input
       controller[:apcount].times do
-        ap_mac_end = HEXADECIMAL_CHARSET.shuffle!.join[0...6] # Random values to append to mac address
+        ap_mac_end = self.class::HEXADECIMAL_CHARSET.shuffle!.join[0...6] # Random values to append to mac address
 
         payload.push(
           infrastructure_device: controller_id,

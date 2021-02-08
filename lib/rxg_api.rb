@@ -10,19 +10,21 @@ require_relative 'rxg_api/system'
 # One function is used to deliver payload, another to get body of page
 # Individual functions are used for each object it creates
 class RxgAPI
+  #These are the create methods 
+  include Network
+  include Identities
+  include System
+
   SWITCH_POOL = [
     { name: 'Cisco Catalyst 9000', device: 'ciscoios', ports: 16 },
     { name: 'Juniper EX4200', device: 'juniperex', ports: 16 },
     { name: 'Ruckus ICX', device: 'ruckusicx', ports: 16 }
   ].freeze
-  SSID_POOL = ['Pool_Network', 'Convention_Center', 'Lobby_Network', 'Thai_Restaurant', 'Sports_Bar'].freeze
+  SSID_POOL = %w[Pool_Network Convention_Center Lobby_Network Thai_Restaurant Sports_Bar].freeze
   CONTROLLER_POOL = [{
-    name: 'Ruckus Virtual SmartZone', device: 'ruckos', apcount: 3, apname: 'Ruckus R720', apmac: 'ec58ea' 
-    }].freeze
-  DEVICE_POOL = ['Toshiba Laptop', 'Dell Laptop', 'Sony Laptop', 'Asus Laptop', 'Nvidia Shield TV', 'Roku TV', 'Ipad',
-    'Macbook Pro', 'Macbook Air', 'Playstation 3', 'XBox One', 'Iphone', 'Samsung Galaxy', 'Samsung Galaxy Tab',
-    'Amazon Fire HD', 'Amazon Alexa'].freeze
-  ACCOUNT_GROUP_POOL = ['Business', 'Residential', 'Hotspot', 'Guests', 'Free'].freeze
+    name: 'Ruckus Virtual SmartZone', device: 'ruckos', apcount: 3, apname: 'Ruckus R720', apmac: 'ec58ea'
+  }].freeze
+  ACCOUNT_GROUP_POOL = %w[Business Residential Hotspot Guests Free].freeze
   ALPHANUMERIC_CHARSET = ('A'..'Z').to_a + ('0'..'9').to_a + ('a'..'z').to_a.freeze
   HEXADECIMAL_CHARSET = ('0'..'9').to_a + ('a'..'f').to_a.freeze
   FIRST_NAME_POOL = %w[Aaron Abby Abigail Adam Addison Aiden Alexander Alexis Allison Alyssa Amanda Amelia Andrew
@@ -46,8 +48,12 @@ class RxgAPI
   EMAIL_DOMAIN_POOL = %w[aol.com bellsouth.net btinternet.com charter.net comcast.net cox.net earthlink.netgmail.com
     hotmail.co.uk hotmail.com msn.com ntlworld.com rediffmail.com sbcglobal.net shaw.ca verizon.net yahoo.ca yahoo.co.in
     yahoo.co.uk yahoo.com].freeze
-  DEPARTMENT_POOL = ['Legal', 'Finance', 'Engineering', 'Support', 'Sales', 'Marketing', 'Communications', 'Research'].freeze
-  MACHINE_NAME_POOL = ['east', 'west', 'north', 'south', 'gateway', 'wifi', 'node', 'login'].freeze
+  DEPARTMENT_POOL = %w[Legal Finance Engineering Support Sales Marketing Communications
+    Research].freeze
+  MACHINE_NAME_POOL = %w[east west north south gateway wifi node login].freeze
+  DEVICE_POOL = ['Toshiba Laptop', 'Dell Laptop', 'Sony Laptop', 'Asus Laptop', 'Nvidia Shield TV', 'Roku TV', 'iPad',
+    'Macbook Pro', 'Macbook Air', 'Playstation 3', 'XBox One', 'iPhone', 'Samsung Galaxy', 'Samsung Galaxy Tab',
+    'Amazon Fire HD', 'Amazon Alexa'].freeze
 
   # Looks to see if device is statically configured, if not then call the set methods
   def initialize(address, key)
@@ -72,6 +78,7 @@ class RxgAPI
         address_input = $LAST_READ_LINE
       end
     end
+
     address_input
   end
 
@@ -83,12 +90,12 @@ class RxgAPI
       puts 'Enter your API key.'
       puts 'API key can be found at System > Admin, select your user and click Show.'
       get_response = Excon.get("#{address}/admin/scaffolds/switch_devices/index.json?api_key=#{$stdin.gets.chomp!}")
+
       if get_response.status === 200
         api_key_input = $LAST_READ_LINE
       else
         puts 'Invalid key.'
       end
-
     end
 
     api_key_input
@@ -108,7 +115,6 @@ class RxgAPI
           persistent: true
         )
       end
-      
     end.each(&:join)
   end
 
@@ -118,13 +124,11 @@ class RxgAPI
     json_body = JSON.parse(Excon.get(get_url).body)
 
     if filters.any?
-      filters.each do |name, value| 
+      filters.each do |name, value|
         json_body.keep_if { |return_item| return_item[name.to_s] == value.to_s }
       end
-
     end
 
     json_body
   end
-  
 end
