@@ -4,7 +4,7 @@ module Identities
   # Creating an account will also create 1 account group and several devices tied to accounts
   def create_account(account_count)
     scaffold = 'accounts'
-    groups_array = api_get_body('account_groups')
+    groups_array = get_table('account_groups')
     account_group = nil
 
     # If there are groups created, use the last created one
@@ -45,13 +45,13 @@ module Identities
       )
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 
   # Creates 1 to 4 devices for the last created accounts
   def create_device(device_count)
     scaffold = 'devices'
-    accounts_array = api_get_body('accounts').last(device_count)
+    accounts_array = get_table('accounts').last(device_count)
     payload = []
 
     accounts_array.each do |account|
@@ -64,7 +64,7 @@ module Identities
       end
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 
   def create_account_group(group_count)
@@ -78,6 +78,6 @@ module Identities
       )
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 end

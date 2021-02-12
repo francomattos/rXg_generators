@@ -5,7 +5,7 @@ module Network
   def create_switch(switch_count)
     type = 'SwitchDevice' # Needs to specify to infrastructure what type of device to use
     scaffold = 'switch_devices'
-    switch_id = api_get_body(scaffold).size
+    switch_id = get_table(scaffold).size
     payload = []
 
     switch_count.times do
@@ -21,34 +21,35 @@ module Network
       )
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 
   def create_wlan_controller(controller_count)
     type = 'WlanDevice' # Needs to specify to infrastructure what type of device to use
     scaffold = 'wlan_devices'
-    controller_id = api_get_body(scaffold).size
+    controller_id = get_table(scaffold).size
     payload = []
-    
+
     controller_count.times do
       controller_id += 1
       controller_pool_index = rand(self.class::CONTROLLER_POOL.size)
       payload.push(
-        name: "[#{controller_id}] #{self.class::CONTROLLER_POOL.dig(controller_pool_index, :name)}", # Prepends ID so names are unique
+        # Prepends ID so names are unique
+        name: "[#{controller_id}] #{self.class::CONTROLLER_POOL.dig(controller_pool_index, :name)}",
         type: type,
-        host: '192.168.20.' + controller_id.to_s,
+        host: "192.168.20.#{controller_id.to_s}",
         device: self.class::CONTROLLER_POOL.dig(controller_pool_index, :device),
         protocol: 'ssh_coa',
         username: 'admin'
       )
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 
   # Creates wlan for last created controllers
   def create_wlan(wlan_count)
-    controller_array = api_get_body('wlan_devices').last(wlan_count)
+    controller_array = get_table('wlan_devices').last(wlan_count)
     scaffold = 'wlans'
     payload = []
 
@@ -65,12 +66,12 @@ module Network
       )
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 
   def create_access_point(wlan_count)
     # Creates access points for last created controllers
-    controller_array = api_get_body('wlan_devices').last(wlan_count)
+    controller_array = get_table('wlan_devices').last(wlan_count)
     scaffold = 'access_points'
     payload = []
 
@@ -92,6 +93,6 @@ module Network
       end
     end
 
-    api_post(payload, scaffold)
+    create_entry(payload, scaffold)
   end
 end
